@@ -1,0 +1,70 @@
+cmake_minimum_required(VERSION 2.6)
+
+project(ofilmopssl C)
+
+enable_testing()
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
+
+# only build examples if this is the main project
+if(CMAKE_PROJECT_NAME STREQUAL "muduo")
+  option(MUDUO_BUILD_EXAMPLES "Build Muduo examples" ON)
+endif()
+
+set(C_FLAGS
+ -g 
+ # -DVALGRIND
+ -DCHECK_PTHREAD_RETURN_VALUE     
+ -D_FILE_OFFSET_BITS=64           
+ -Wall             
+ -Wextra            
+# -Werror            
+ -Wconversion       
+ -Wno-unused-parameter  
+ #-Wold-style-cast       
+ #-Woverloaded-virtual   
+ -Wpointer-arith       
+ -Wshadow              
+ -Wwrite-strings        
+ -march=native          
+ -rdynamic
+ )
+if(CMAKE_BUILD_BITS EQUAL 32)
+  list(APPEND C_FLAGS "-m32")
+endif()
+if(CMAKE_C_COMPILER_ID STREQUAL "Clang")
+  list(APPEND C_FLAGS "-Wno-null-dereference")
+  list(APPEND C_FLAGS "-Wno-sign-conversion")
+  list(APPEND C_FLAGS "-Wno-unused-local-typedef")
+  list(APPEND C_FLAGS "-Wthread-safety")
+  list(REMOVE_ITEM C_FLAGS "-rdynamic")
+endif()
+string(REPLACE ";" " " CMAKE_C_FLAGS "${C_FLAGS}")
+
+set(CMAKE_C_FLAGS_DEBUG "-O0")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
+
+include_directories(${PROJECT_SOURCE_DIR})
+
+string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
+message(STATUS "C_FLAGS = " ${CMAKE_C_FLAGS} " " ${CMAKE_C_FLAGS_${BUILD_TYPE}})
+
+
+set(echo_SRCS
+  test.c
+  )
+
+include_directories(../include)
+link_directories(/ywh_work/data/srcs/OfilmOpsslC/install/lib)
+
+add_executable(testMain ${echo_SRCS})
+target_link_libraries(testMain ofopssl)
+
+
+
+
+
